@@ -1,0 +1,24 @@
+import yt_dlp
+import os
+
+DOWNLOAD_DIR = "downloads"
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+
+def download_video(url):
+
+    ydl_opts = {
+        "format": "best",
+        "noplaylist": True,
+        "quiet": True,
+        "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s"
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+
+    video_id = info["id"]
+
+    return {
+        "video_id": video_id,
+        "video_path": f"{DOWNLOAD_DIR}/{video_id}.mp4"
+    }
