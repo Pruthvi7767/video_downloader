@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from downloader import download_video
+import traceback
 
 app = FastAPI()
 
@@ -13,4 +14,8 @@ def health():
 
 @app.post("/download")
 def download(req: Request):
-    return download_video(req.url)
+    try:
+        return download_video(req.url)
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": str(e)}

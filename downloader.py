@@ -1,7 +1,7 @@
 import yt_dlp
 import os
 
-DOWNLOAD_DIR = "downloads"
+DOWNLOAD_DIR = "/tmp/downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def download_video(url):
@@ -9,7 +9,7 @@ def download_video(url):
     ydl_opts = {
         "format": "best",
         "noplaylist": True,
-        "quiet": True,
+        "quiet": False,
         "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s"
     }
 
