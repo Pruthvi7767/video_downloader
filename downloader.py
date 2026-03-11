@@ -7,10 +7,17 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 def download_video(url):
 
     ydl_opts = {
-        "format": "best",
+        "format": "bestvideo+bestaudio/best",
         "noplaylist": True,
-        "quiet": False,
-        "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s"
+        "quiet": True,
+        "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
+
+        # important fixes
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android"]
+            }
+        }
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
