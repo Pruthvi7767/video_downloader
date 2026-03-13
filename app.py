@@ -22,41 +22,41 @@ def get_video_info(data: VideoRequest):
         ydl_opts = {
             "quiet": True,
             "nocheckcertificate": True,
-            "skip_download": True,
-            "ignoreerrors": True,
+            "ignoreerrors": False,
             "cookiefile": "cookies.txt",
-            "format": "bestvideo+bestaudio/best",
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            "subtitleslangs": ["en"],
+            "skip_download": True,
             "retries": 5,
+            "format": "bv*+ba/b",
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["android", "web"]
+                }
+            }
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(data.url, download=False)
 
         if not info:
-            raise Exception("Could not extract video information")
+            raise Exception("Video extraction failed")
+
+        # handle playlist type response
+        if "entries" in info:
+            info = info["entries"][0]
 
         formats = info.get("formats", [])
 
         stream_url = None
+
         for f in formats:
             if f.get("url"):
                 stream_url = f["url"]
                 break
 
-        captions = info.get("automatic_captions", {})
-        transcript_url = ""
-
-        if "en" in captions:
-            transcript_url = captions["en"][0]["url"]
-
         return {
             "title": info.get("title"),
             "duration": info.get("duration"),
-            "stream_url": stream_url,
-            "transcript_url": transcript_url
+            "stream_url": stream_url
         }
 
     except Exception as e:
