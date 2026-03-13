@@ -1,36 +1,40 @@
+import yt_dlp
 from fastapi import FastAPI
-from youtube_transcript_api import YouTubeTranscriptApi
+import os
 
 app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"status": "transcript service running"}
+    return {"status": "yt-dlp service running"}
 
-@app.get("/transcript/{video_id}")
-def get_transcript(video_id: str):
+@app.post("/info")
+def get_video_info(data: dict):
+    url = data.get("url")
 
-    try:
-        api = YouTubeTranscriptApi()
+    ydl_opts = {
+        "skip_download": True,
+        "writesubtitles": True,
+        "writeautomaticsub": True,
+        "subtitleslangs": ["en"],
+        "subtitlesformat": "vtt",
+        "quiet": True
+    }
 
-        transcript = api.fetch(video_id)
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
 
-        segments = [
-            {
-                "text": t.text,
-                "start": t.start,
-                "duration": t.duration
-            }
-            for t in transcript
-        ]
+    title = info.get("title")
+    duration = info.get("duration")
 
-        full_text = " ".join([t["text"] for t in segments])
+    transcript = ""
+    subs = info.get("automatic_captions") or {}
 
-        return {
-            "video_id": video_id,
-            "segments": segments,
-            "full_text": full_text
-        }
+    if "en" in subs:
+        transcript = subs["en"][0]["url"]
 
-    except Exception as e:
-        return {"error": str(e)}
+    return {
+        "title": title,
+        "duration": duration,
+        "transcript_url": transcript
+    }
