@@ -22,11 +22,9 @@ def get_video_info(data: VideoRequest):
         ydl_opts = {
             "quiet": True,
             "nocheckcertificate": True,
-            "ignoreerrors": False,
             "cookiefile": "cookies.txt",
             "skip_download": True,
             "retries": 5,
-            "format": "best",   # safer format selection
             "extractor_args": {
                 "youtube": {
                     "player_client": ["android", "web"]
@@ -37,20 +35,24 @@ def get_video_info(data: VideoRequest):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(data.url, download=False)
 
-        if not info:
-            raise Exception("Video extraction failed")
-
         if "entries" in info:
             info = info["entries"][0]
 
         formats = info.get("formats", [])
 
+        if not formats:
+            raise Exception("No formats returned by YouTube")
+
         stream_url = None
 
+        # choose the first format with a playable URL
         for f in formats:
             if f.get("url"):
                 stream_url = f["url"]
                 break
+
+        if not stream_url:
+            raise Exception("No playable stream found")
 
         return {
             "title": info.get("title"),
