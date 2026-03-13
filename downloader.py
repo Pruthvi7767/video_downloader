@@ -1,8 +1,6 @@
 import yt_dlp
 
-
 def get_stream_url(url):
-
     ydl_opts = {
         "quiet": True,
         "skip_download": True,
@@ -21,6 +19,7 @@ def get_stream_url(url):
     if not formats:
         raise Exception("No formats found")
 
+    # Select the last format in the list (usually highest quality)
     best = formats[-1]
 
     return {
