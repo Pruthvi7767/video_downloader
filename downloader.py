@@ -5,34 +5,39 @@ def get_stream_url(url):
     ydl_opts = {
         "quiet": True,
         "skip_download": True,
+        "nocheckcertificate": True,
 
-        # let yt-dlp choose the best available format
-        "format": "bestvideo+bestaudio/best",
+        # safer format selection
+        "format": "best[ext=mp4]/best",
 
+        # helps bypass some YouTube bot checks
         "extractor_args": {
             "youtube": {
-                "player_client": ["android"]
+                "player_client": ["web"]
             }
         },
 
-        "nocheckcertificate": True,
-        "cookiefile": "cookies.txt"
+        # avoid DASH-only streams
+        "merge_output_format": "mp4"
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
 
-    formats = info.get("formats")
+    formats = info.get("formats", [])
 
-    if not formats:
-        raise Exception("No formats available")
+    # filter only real video streams
+    video_formats = [
+        f for f in formats
+        if f.get("url") and f.get("vcodec") != "none"
+    ]
 
-    # find a playable stream
-    for f in reversed(formats):
-        if f.get("url"):
-            return {
-                "title": info.get("title"),
-                "stream_url": f["url"]
-            }
+    if not video_formats:
+        raise Exception("No playable video streams found")
 
-    raise Exception("No valid stream found")
+    best = video_formats[-1]
+
+    return {
+        "title": info.get("title"),
+        "stream_url": best["url"]
+    }
