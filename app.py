@@ -27,7 +27,7 @@ def get_video_info(data: VideoRequest):
             "retries": 5,
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["android", "web"]
+                    "player_client": ["android", "tv_embedded"]
                 }
             }
         }
@@ -41,13 +41,12 @@ def get_video_info(data: VideoRequest):
         formats = info.get("formats", [])
 
         if not formats:
-            raise Exception("No formats returned by YouTube")
+            raise Exception("No formats returned from YouTube")
 
+        # choose best video format
         stream_url = None
-
-        # choose the first format with a playable URL
         for f in formats:
-            if f.get("url"):
+            if f.get("url") and f.get("vcodec") != "none":
                 stream_url = f["url"]
                 break
 
