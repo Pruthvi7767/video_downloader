@@ -15,11 +15,10 @@ def get_stream_url(url):
         info = ydl.extract_info(url, download=False)
 
     formats = info.get("formats")
-
     if not formats:
         raise Exception("No formats found")
 
-    # Select the last format in the list (usually highest quality)
+    # Select the best format
     best = formats[-1]
 
     return {

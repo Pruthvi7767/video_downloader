@@ -6,8 +6,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
+# Copy all files into the container (Corrected the two dots)
 COPY . .
 
-# Start the application using the python script directly
+# Start the application
 CMD ["python", "app.py"]
