@@ -9,16 +9,16 @@ app = FastAPI()
 class VideoRequest(BaseModel):
     url: str
 
+
 @app.get("/")
 def home():
     return {"status": "service running"}
 
+
 @app.post("/stream")
 def stream(req: VideoRequest):
-    try:
-        return get_stream_url(req.url)
-    except Exception as e:
-        return {"error": str(e)}
+    return get_stream_url(req.url)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
