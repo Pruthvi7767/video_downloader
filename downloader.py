@@ -8,10 +8,21 @@ def get_stream_url(url):
         "quiet": True,
         "skip_download": True,
         "cookiefile": "cookies.txt",
-        "format": "best",
-        "nocheckcertificate": True,
+
+        # safer format selection
+        "format": "bestvideo+bestaudio/best",
+
+        # reduce bot detection
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["web", "android"]
+            }
+        },
+
+        # retry inside yt-dlp
         "retries": 10,
-        "fragment_retries": 10
+        "fragment_retries": 10,
+        "nocheckcertificate": True
     }
 
     attempts = 5
@@ -30,14 +41,14 @@ def get_stream_url(url):
                         "stream_url": f["url"]
                     }
 
-            raise Exception("No playable video format found")
+            raise Exception("No playable formats found")
 
         except Exception as e:
 
-            print("Attempt failed:", e)
+            print("Attempt", attempt + 1, "failed:", e)
 
             if attempt < attempts - 1:
-                time.sleep(5)
+                time.sleep(8)
             else:
                 return {
                     "status": "failed",
