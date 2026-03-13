@@ -1,40 +1,45 @@
 import yt_dlp
-from fastapi import FastAPI
-import os
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
+
+
+class VideoRequest(BaseModel):
+    url: str
+
 
 @app.get("/")
 def home():
     return {"status": "yt-dlp service running"}
 
+
 @app.post("/info")
-def get_video_info(data: dict):
-    url = data.get("url")
+def get_video_info(data: VideoRequest):
 
-    ydl_opts = {
-        "skip_download": True,
-        "writesubtitles": True,
-        "writeautomaticsub": True,
-        "subtitleslangs": ["en"],
-        "subtitlesformat": "vtt",
-        "quiet": True
-    }
+    try:
+        ydl_opts = {
+            "quiet": True,
+            "skip_download": True,
+            "writesubtitles": True,
+            "writeautomaticsub": True,
+            "subtitleslangs": ["en"],
+        }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(data.url, download=False)
 
-    title = info.get("title")
-    duration = info.get("duration")
+        captions = info.get("automatic_captions", {})
+        transcript_url = ""
 
-    transcript = ""
-    subs = info.get("automatic_captions") or {}
+        if "en" in captions:
+            transcript_url = captions["en"][0]["url"]
 
-    if "en" in subs:
-        transcript = subs["en"][0]["url"]
+        return {
+            "title": info.get("title"),
+            "duration": info.get("duration"),
+            "transcript_url": transcript_url,
+        }
 
-    return {
-        "title": title,
-        "duration": duration,
-        "transcript_url": transcript
-    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
