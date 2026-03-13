@@ -1,25 +1,25 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from downloader import get_stream_url
-import os
-import uvicorn
+from youtube_transcript_api import YouTubeTranscriptApi
 
 app = FastAPI()
 
-class VideoRequest(BaseModel):
-    url: str
-
-
 @app.get("/")
 def home():
-    return {"status": "service running"}
+    return {"status": "transcript service running"}
 
+@app.get("/transcript/{video_id}")
+def get_transcript(video_id: str):
 
-@app.post("/stream")
-def stream(req: VideoRequest):
-    return get_stream_url(req.url)
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
+        text = " ".join([t["text"] for t in transcript])
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    uvicorn.run("app:app", host="0.0.0.0", port=port)
+        return {
+            "video_id": video_id,
+            "segments": transcript,
+            "full_text": text
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
