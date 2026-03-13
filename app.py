@@ -11,14 +11,25 @@ def home():
 def get_transcript(video_id: str):
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        api = YouTubeTranscriptApi()
 
-        text = " ".join([t["text"] for t in transcript])
+        transcript = api.fetch(video_id)
+
+        segments = [
+            {
+                "text": t.text,
+                "start": t.start,
+                "duration": t.duration
+            }
+            for t in transcript
+        ]
+
+        full_text = " ".join([t["text"] for t in segments])
 
         return {
             "video_id": video_id,
-            "segments": transcript,
-            "full_text": text
+            "segments": segments,
+            "full_text": full_text
         }
 
     except Exception as e:
