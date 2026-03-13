@@ -26,7 +26,7 @@ def get_video_info(data: VideoRequest):
             "cookiefile": "cookies.txt",
             "skip_download": True,
             "retries": 5,
-            "format": "bv*+ba/b",
+            "format": "best",   # safer format selection
             "extractor_args": {
                 "youtube": {
                     "player_client": ["android", "web"]
@@ -40,7 +40,6 @@ def get_video_info(data: VideoRequest):
         if not info:
             raise Exception("Video extraction failed")
 
-        # handle playlist type response
         if "entries" in info:
             info = info["entries"][0]
 
